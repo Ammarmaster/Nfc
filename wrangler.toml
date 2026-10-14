@@ -1,0 +1,23 @@
+name = "tapreview-saas"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+# Cloudflare D1 Database Binding
+[[d1_databases]]
+binding = "DB"
+database_name = "tapreview-db"
+database_id = "tapreview-d1-production-id"
+migrations_dir = "migrations"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+APP_DOMAIN = "https://tapreview.in"
+DEFAULT_ROUTE_PREFIX = "/r/"
+AI_PROVIDER = "gemini" # Options: gemini, openai, workers-ai, template
+AI_MODEL = "gemini-1.5-flash"
+ENABLE_NO_KEY_FALLBACK = "true"
+
+# Secret instructions:
+# Run: npx wrangler secret put AI_API_KEY
+# Run: npx wrangler secret put ADMIN_AUTH_TOKEN
