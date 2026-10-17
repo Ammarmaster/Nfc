@@ -4,18 +4,67 @@ import type { Stand, Business, MenuCategory, MenuItem, AnalyticsEvent, BulkGener
 export const api = {
   // --- Stands ---
   getStands: async (): Promise<Stand[]> => {
+    try {
+      const res = await fetch('/api/stands');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) return data;
+      }
+    } catch {
+      // In local dev without Cloudflare Functions runtime proxy, fallback to persistent local DB
+    }
     return db.getStands().filter(s => !s.isArchived);
   },
 
   getStandBySlug: async (slug: string): Promise<Stand | undefined> => {
+    try {
+      const res = await fetch('/api/stands');
+      if (res.ok) {
+        const list: Stand[] = await res.json();
+        const found = list.find(s => s.slug.toLowerCase() === slug.trim().toLowerCase());
+        if (found) return found;
+      }
+    } catch {
+      // Fallback
+    }
     return db.getStandBySlug(slug);
   },
 
   saveStand: async (stand: Stand): Promise<Stand> => {
+    try {
+      const res = await fetch(`/api/stands/${stand.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(stand),
+      });
+      if (res.ok) {
+        db.saveStand(stand);
+        return stand;
+      }
+    } catch {
+      // Fallback
+    }
     return db.saveStand(stand);
   },
 
   bulkCreateStands: async (options: BulkGenerateOptions): Promise<{ created: Stand[]; skipped: string[] }> => {
+    try {
+      const res = await fetch('/api/stands/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(options),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Sync local persistence
+        for (const s of data.created || []) {
+          db.saveStand(s);
+        }
+        return data;
+      }
+    } catch {
+      // Fallback
+    }
     return db.bulkCreateStands(options);
   },
 
@@ -24,53 +73,158 @@ export const api = {
   },
 
   archiveStand: async (id: string): Promise<void> => {
+    try {
+      await fetch(`/api/stands/${id}`, { method: 'DELETE' });
+    } catch {
+      // Fallback
+    }
     return db.archiveStand(id);
   },
 
   // --- Businesses ---
   getBusinesses: async (): Promise<Business[]> => {
+    try {
+      const res = await fetch('/api/businesses');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) return data;
+      }
+    } catch {
+      // Fallback
+    }
     return db.getBusinesses();
   },
 
   getBusinessById: async (id: string): Promise<Business | undefined> => {
+    try {
+      const res = await fetch('/api/businesses');
+      if (res.ok) {
+        const list: Business[] = await res.json();
+        const found = list.find(b => b.id === id);
+        if (found) return found;
+      }
+    } catch {
+      // Fallback
+    }
     return db.getBusiness(id);
   },
 
   saveBusiness: async (business: Business): Promise<Business> => {
+    try {
+      const res = await fetch('/api/businesses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(business),
+      });
+      if (res.ok) {
+        db.saveBusiness(business);
+        return business;
+      }
+    } catch {
+      // Fallback
+    }
     return db.saveBusiness(business);
   },
 
   deleteBusiness: async (id: string): Promise<void> => {
+    try {
+      await fetch(`/api/businesses/${id}`, { method: 'DELETE' });
+    } catch {
+      // Fallback
+    }
     return db.deleteBusiness(id);
   },
 
   // --- Digital Menu ---
   getMenuCategories: async (businessId: string): Promise<MenuCategory[]> => {
+    try {
+      const res = await fetch(`/api/menu?businessId=${encodeURIComponent(businessId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.categories)) return data.categories;
+      }
+    } catch {
+      // Fallback
+    }
     return db.getMenuCategories(businessId);
   },
 
   saveMenuCategory: async (category: MenuCategory): Promise<MenuCategory> => {
+    try {
+      const res = await fetch('/api/menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'category', ...category }),
+      });
+      if (res.ok) {
+        db.saveMenuCategory(category);
+        return category;
+      }
+    } catch {
+      // Fallback
+    }
     return db.saveMenuCategory(category);
   },
 
   deleteMenuCategory: async (id: string): Promise<void> => {
+    try {
+      await fetch(`/api/menu?type=category&id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    } catch {
+      // Fallback
+    }
     return db.deleteMenuCategory(id);
   },
 
   getMenuItems: async (businessId: string): Promise<MenuItem[]> => {
+    try {
+      const res = await fetch(`/api/menu?businessId=${encodeURIComponent(businessId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.items)) return data.items;
+      }
+    } catch {
+      // Fallback
+    }
     return db.getMenuItems(businessId);
   },
 
   saveMenuItem: async (item: MenuItem): Promise<MenuItem> => {
+    try {
+      const res = await fetch('/api/menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'item', ...item }),
+      });
+      if (res.ok) {
+        db.saveMenuItem(item);
+        return item;
+      }
+    } catch {
+      // Fallback
+    }
     return db.saveMenuItem(item);
   },
 
   deleteMenuItem: async (id: string): Promise<void> => {
+    try {
+      await fetch(`/api/menu?type=item&id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    } catch {
+      // Fallback
+    }
     return db.deleteMenuItem(id);
   },
 
   // --- Analytics ---
   getAnalytics: async (): Promise<AnalyticsEvent[]> => {
+    try {
+      const res = await fetch('/api/analytics');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.events)) return data.events;
+      }
+    } catch {
+      // Fallback
+    }
     return db.getAnalytics();
   },
 
@@ -105,7 +259,7 @@ export const api = {
   }): Promise<{ drafts: string[]; source: 'ai' | 'template' }> => {
     const settings = db.getSettings();
 
-    // 1. If serverless backend endpoint is available, try it
+    // 1. If serverless backend endpoint is available, try it first
     try {
       const res = await fetch('/api/ai/draft', {
         method: 'POST',
@@ -119,10 +273,10 @@ export const api = {
         }
       }
     } catch {
-      // In local dev without Cloudflare worker runtime, fallback seamlessly to client adapter
+      // In local dev without Cloudflare worker runtime, fallback to direct client adapter
     }
 
-    // 2. Direct client-side Gemini call if user configured API key in Settings modal
+    // 2. Direct Gemini call if user configured API key
     if (settings.apiKey && settings.provider === 'gemini') {
       try {
         const prompt = `You are a helpful assistant helping a customer draft an authentic Google Review for "${params.businessName}" (${params.category || 'Local Business'}).
@@ -166,7 +320,7 @@ Format as JSON array of 3 strings: ["draft1", "draft2", "draft3"]. Output valid 
       }
     }
 
-    // 3. High quality deterministic template engine (No API Key Required, 100% Free, Strictly Grounded)
+    // 3. High-quality deterministic template engine (No API Key Required, 100% Free, Strictly Grounded)
     const highlights = params.experienceTags.length > 0 
       ? params.experienceTags.join(' and ') 
       : 'pleasant visit';

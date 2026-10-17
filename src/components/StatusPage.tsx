@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertCircle, ArrowLeft, ShieldAlert } from 'lucide-react';
+import { sounds } from '../utils/audio';
 
 interface StatusPageProps {
   code: 'inactive' | 'unassigned' | 'not_found';
@@ -21,36 +22,39 @@ export const StatusPage: React.FC<StatusPageProps> = ({ code, slug, onNavigateHo
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-slate-900/80 border border-slate-800 rounded-2xl p-8 text-center shadow-2xl backdrop-blur-xl">
-        <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+    <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center p-4">
+      <div className="max-w-md w-full milky-card rounded-3xl p-8 text-center shadow-xl border border-[#E8E2D5] bg-white">
+        <div className="w-16 h-16 mx-auto mb-6 rounded-3xl bg-amber-50 border border-amber-200 flex items-center justify-center text-[#B3801A]">
           {code === 'inactive' ? <ShieldAlert className="w-8 h-8" /> : <AlertCircle className="w-8 h-8" />}
         </div>
 
-        <span className="inline-block px-3 py-1 bg-slate-800 text-slate-300 text-xs font-semibold rounded-full uppercase tracking-wider mb-3">
+        <span className="inline-block px-3 py-1 bg-[#FAF8F5] text-stone-700 text-xs font-bold rounded-full uppercase tracking-wider mb-3 border border-[#E8E2D5]">
           Stand #{slug || 'Unknown'}
         </span>
 
-        <h1 className="text-2xl font-bold text-white mb-3">
+        <h1 className="text-2xl font-black text-stone-900 mb-3 tracking-tight">
           {titles[code]}
         </h1>
 
-        <p className="text-slate-400 text-sm leading-relaxed mb-8">
+        <p className="text-stone-500 text-sm leading-relaxed mb-6">
           {descriptions[code]}
         </p>
 
-        <div className="p-4 bg-slate-950/60 rounded-xl border border-slate-800/80 text-xs text-slate-500 mb-6 text-left">
-          <p className="font-semibold text-slate-400 mb-1">Permanent URL Stability Notice</p>
-          This physical stand URL will remain identical once re-activated or assigned. The printed QR code and programmed NFC tag do not need replacement.
+        <div className="p-4 bg-[#FAF8F5] rounded-2xl border border-[#E8E2D5] text-xs text-stone-500 mb-6 text-left">
+          <p className="font-bold text-stone-800 mb-1">Permanent URL Stability Notice</p>
+          This physical stand URL will remain identical once re-activated or assigned. The printed QR code and programmed NFC tag never need replacement.
         </div>
 
         {onNavigateHome && (
           <button
-            onClick={onNavigateHome}
-            className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium transition-colors"
+            onClick={() => {
+              sounds.playTap();
+              onNavigateHome();
+            }}
+            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#C59B27] text-stone-950 text-sm font-extrabold shadow-md hover:brightness-105 active:scale-95 transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
-            Return to Dashboard
+            <span>Return to Dashboard</span>
           </button>
         )}
       </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { AIConfig } from '../types';
 import { api } from '../services/api';
 import { Settings, Sparkles, Key, Globe, RefreshCcw, X, Check } from 'lucide-react';
+import { sounds } from '../utils/audio';
 
 interface SettingsModalProps {
   config: AIConfig;
@@ -27,6 +28,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    sounds.playTap();
     const newConfig: AIConfig = {
       provider,
       apiKey: apiKey.trim(),
@@ -47,6 +49,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleReset = async () => {
+    sounds.playTap();
     const confirm = window.confirm('Reset all demo stands, businesses, and analytics back to initial demo seeds?');
     if (!confirm) return;
     await api.resetAllData();
@@ -55,138 +58,139 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl my-8">
-        <div className="flex items-center justify-between mb-4">
+    <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto animate-[fadeIn_0.2s_ease-out]">
+      <div className="bg-[#FAF8F5] border border-[#E8E2D5] rounded-t-[2.2rem] sm:rounded-3xl max-w-xl w-full p-6 shadow-2xl my-0 sm:my-8 transition-all">
+        {/* Mobile Handle */}
+        <div className="sm:hidden w-12 h-1.5 bg-stone-300 rounded-full mx-auto -mt-2 mb-3" />
+
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#EFEAE1]">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+            <span className="p-2 rounded-xl bg-amber-100 text-[#B3801A] border border-amber-300">
               <Settings className="w-5 h-5" />
             </span>
             <div>
-              <h2 className="text-base font-bold text-white">System & AI Settings</h2>
-              <p className="text-xs text-slate-400">Serverless AI provider and production domain configuration.</p>
+              <h2 className="text-base font-bold text-stone-900">System & AI Settings</h2>
+              <p className="text-xs text-stone-500">Cloud AI provider and permanent production domain configuration.</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white">
+          <button onClick={onClose} className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-200/50">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSave} className="space-y-4 text-xs">
           {/* Domain Configuration */}
-          <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-800">
-            <h3 className="font-semibold text-slate-200 mb-2 flex items-center gap-1.5">
-              <Globe className="w-4 h-4 text-emerald-400" />
-              <span>Production Domain Configuration</span>
+          <div className="p-4 bg-white rounded-2xl border border-[#E8E2D5] shadow-sm">
+            <h3 className="font-bold text-stone-900 mb-2 flex items-center gap-1.5">
+              <Globe className="w-4 h-4 text-[#B3801A]" />
+              <span>Permanent Public Domain</span>
             </h3>
-            <label className="block text-slate-400 mb-1">Permanent Public Domain</label>
-            <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2">
-              <span className="text-slate-500">https://</span>
+            <label className="block text-stone-600 mb-1 font-medium">Domain Name</label>
+            <div className="flex items-center gap-1 bg-[#FAF8F5] border border-[#DCD4C5] rounded-xl px-3 py-2">
+              <span className="text-stone-400">https://</span>
               <input
                 type="text"
                 value={customDomain}
                 onChange={(e) => setCustomDomain(e.target.value)}
                 placeholder="tapreview.in or yourdomain.in"
-                className="w-full bg-transparent text-white font-mono text-xs focus:outline-none"
+                className="w-full bg-transparent text-stone-900 font-mono text-xs focus:outline-none"
               />
             </div>
-            <p className="text-[10px] text-slate-500 mt-1.5">
-              All generated QR codes and NFC chips will encode URLs under this domain (e.g. <code>https://{customDomain}/r/01</code>).
+            <p className="text-[10px] text-stone-500 mt-1.5">
+              All generated QR codes and NFC chips encode URLs under this domain (e.g. <code>https://{customDomain}/r/01</code>).
             </p>
           </div>
 
           {/* AI Provider Section */}
-          <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-800 space-y-3">
-            <h3 className="font-semibold text-slate-200 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-teal-400" />
-              <span>AI Review Draft Engine</span>
+          <div className="p-4 bg-white rounded-2xl border border-[#E8E2D5] space-y-3 shadow-sm">
+            <h3 className="font-bold text-stone-900 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-[#B3801A]" />
+              <span>Review Assistant AI Engine</span>
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-slate-400 mb-1">Provider</label>
-                <select
-                  value={provider}
-                  onChange={(e) => setProvider(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-emerald-500"
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: 'template', label: 'Deterministic Engine (Free, Instant)' },
+                { id: 'gemini', label: 'Google Gemini 1.5' },
+                { id: 'openai', label: 'OpenAI GPT-4o' },
+              ].map((p) => (
+                <button
+                  type="button"
+                  key={p.id}
+                  onClick={() => {
+                    sounds.playTap();
+                    setProvider(p.id as any);
+                  }}
+                  className={`p-2.5 rounded-xl border text-center transition-all ${
+                    provider === p.id
+                      ? 'bg-amber-100 border-[#C59B27] text-amber-950 font-bold shadow-sm'
+                      : 'bg-[#FAF8F5] border-[#E8E2D5] text-stone-600 hover:bg-stone-100'
+                  }`}
                 >
-                  <option value="template">Deterministic Templates (Zero-Cost / Free)</option>
-                  <option value="gemini">Google Gemini AI</option>
-                  <option value="openai">OpenAI</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-400 mb-1">Model</label>
-                <select
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-emerald-500"
-                >
-                  <option value="gemini-1.5-flash">Gemini 1.5 Flash (Fast & Low Cost)</option>
-                  <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                  <option value="gpt-4o-mini">GPT-4o Mini</option>
-                </select>
-              </div>
+                  {p.label}
+                </button>
+              ))}
             </div>
 
             {provider !== 'template' && (
               <div>
-                <label className="block text-slate-400 mb-1 flex items-center gap-1">
-                  <Key className="w-3.5 h-3.5 text-slate-500" />
-                  <span>API Key (Serverless Secret / Local Preview)</span>
+                <label className="block text-stone-700 font-bold mb-1">
+                  {provider.toUpperCase()} API Key
                 </label>
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="AI API Key..."
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white font-mono text-xs focus:outline-none focus:border-emerald-500"
-                />
+                <div className="relative">
+                  <Key className="w-4 h-4 absolute left-3 top-2.5 text-stone-400" />
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Enter your API key..."
+                    className="w-full pl-9 pr-3 py-2 bg-[#FAF8F5] border border-[#DCD4C5] rounded-xl text-stone-900 font-mono text-xs focus:outline-none focus:border-[#C59B27]"
+                  />
+                </div>
               </div>
             )}
 
-            <label className="flex items-center gap-2 text-slate-300 pt-1 cursor-pointer">
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-stone-700 font-medium">Automatic Fallback Engine</span>
               <input
                 type="checkbox"
                 checked={enableNoKeyFallback}
                 onChange={(e) => setEnableNoKeyFallback(e.target.checked)}
-                className="rounded border-slate-800 text-emerald-500 focus:ring-0"
+                className="w-4 h-4 accent-[#C59B27] rounded"
               />
-              <span>Automatic Template Fallback when no API Key is available</span>
-            </label>
+            </div>
           </div>
 
-          {/* Reset Demo Data */}
+          {/* Reset Demo Data Button */}
           <div className="pt-2 flex items-center justify-between">
             <button
               type="button"
               onClick={handleReset}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-400 text-xs flex items-center gap-1.5"
+              className="text-stone-500 hover:text-rose-600 flex items-center gap-1.5 text-xs font-semibold"
             >
               <RefreshCcw className="w-3.5 h-3.5" />
-              <span>Reset Factory Demo Data</span>
+              <span>Reset Demo Seed Data</span>
             </button>
 
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300"
+                className="px-4 py-2 rounded-xl bg-white border border-[#DCD4C5] text-stone-700 font-semibold hover:bg-stone-100"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold shadow-glow flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#C59B27] text-stone-950 font-extrabold shadow-md hover:brightness-105 active:scale-95 flex items-center gap-1.5"
               >
                 {savedFeedback ? (
                   <>
-                    <Check className="w-4 h-4 text-white" />
+                    <Check className="w-4 h-4" />
                     <span>Saved!</span>
                   </>
                 ) : (
-                  <span>Save Configuration</span>
+                  <span>Save Settings</span>
                 )}
               </button>
             </div>

@@ -4,40 +4,157 @@
 
 @layer base {
   body {
-    @apply bg-slate-950 text-slate-100 min-h-screen antialiased;
+    background-color: #FAF8F5;
+    background-image: 
+      radial-gradient(at 10% 10%, rgba(245, 235, 218, 0.7) 0px, transparent 40%),
+      radial-gradient(at 90% 15%, rgba(254, 243, 215, 0.6) 0px, transparent 38%),
+      radial-gradient(at 50% 85%, rgba(240, 233, 220, 0.7) 0px, transparent 45%),
+      radial-gradient(at 85% 85%, rgba(235, 245, 240, 0.5) 0px, transparent 40%);
+    background-attachment: fixed;
+    color: #1C1917;
+    min-height: 100vh;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    color: #1C1917;
   }
 }
 
-/* Custom scrollbar for sleek dashboard UI */
+/* Custom Sleek Warm Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(245, 240, 230, 0.8);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: rgba(180, 165, 145, 0.5);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 1);
+  background: rgba(197, 155, 39, 0.7);
 }
 
-/* Glassmorphism helpers */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Luxury Milky Glassmorphic Styles */
+.milky-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(232, 226, 213, 0.75);
+  box-shadow: 0 10px 30px -8px rgba(70, 55, 40, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
-.glass-card {
-  background: rgba(30, 41, 59, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+.milky-card {
+  background: #FFFFFF;
+  border: 1px solid #E8E2D5;
+  box-shadow: 0 8px 25px -6px rgba(70, 55, 40, 0.05), inset 0 1px 0 #FFFFFF;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.milky-card:hover {
+  border-color: #D6CCA8;
+  box-shadow: 0 16px 35px -8px rgba(70, 55, 40, 0.09), inset 0 1px 0 #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.milky-panel {
+  background: #FAF8F5;
+  border: 1px solid #EFEAE1;
+}
+
+/* Gradient Text Shimmers */
+.gold-text-gradient {
+  background: linear-gradient(135deg, #B3801A 0%, #D4AF37 50%, #C59B27 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.emerald-text-gradient {
+  background: linear-gradient(135deg, #059669 0%, #10B981 50%, #047857 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Buttons */
+.milky-btn-gold {
+  background: linear-gradient(135deg, #D4AF37 0%, #E8C872 50%, #C59B27 100%);
+  color: #120F0D;
+  font-weight: 700;
+  box-shadow: 0 4px 18px -2px rgba(197, 155, 39, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.milky-btn-gold:hover {
+  background: linear-gradient(135deg, #C59B27 0%, #D4AF37 50%, #B3801A 100%);
+  box-shadow: 0 6px 24px -1px rgba(197, 155, 39, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+.milky-btn-dark {
+  background: #1C1917;
+  color: #FAF8F5;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  box-shadow: 0 4px 15px -2px rgba(28, 25, 23, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.milky-btn-dark:hover {
+  background: #292524;
+  border-color: rgba(212, 175, 55, 0.6);
+  box-shadow: 0 6px 20px -2px rgba(28, 25, 23, 0.4), 0 0 12px -2px rgba(212, 175, 55, 0.25);
+  transform: translateY(-1px);
+}
+
+.milky-btn-secondary {
+  background: #FFFFFF;
+  color: #292524;
+  border: 1px solid #E4DDD3;
+  box-shadow: 0 2px 8px -1px rgba(70, 55, 40, 0.04);
+  transition: all 0.2s ease;
+}
+.milky-btn-secondary:hover {
+  background: #FAF8F5;
+  border-color: #C59B27;
+  color: #120F0D;
+  transform: translateY(-1px);
+}
+
+/* Milky Input */
+.milky-input {
+  background: #FAF8F5;
+  border: 1px solid #DCD4C5;
+  color: #1C1917;
+  border-radius: 0.85rem;
+  transition: all 0.2s ease;
+}
+.milky-input:focus {
+  outline: none;
+  border-color: #C59B27;
+  box-shadow: 0 0 0 3px rgba(197, 155, 39, 0.15);
+  background: #FFFFFF;
+}
+
+/* Badges */
+.badge-gold {
+  background: #FEF9C3;
+  border: 1px solid #FDE047;
+  color: #854D0E;
+}
+.badge-emerald {
+  background: #DCFCE7;
+  border: 1px solid #86EFAC;
+  color: #166534;
+}
+.badge-rose {
+  background: #FFE4E6;
+  border: 1px solid #FDA4AF;
+  color: #9F1239;
+}
+.badge-slate {
+  background: #F5F0E6;
+  border: 1px solid #E2D9C8;
+  color: #57534E;
 }
 
 /* Print styling for QR code sheets */
