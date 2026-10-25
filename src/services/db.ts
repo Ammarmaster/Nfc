@@ -1,4 +1,5 @@
 import type { Business, Stand, MenuCategory, MenuItem, AnalyticsEvent, AuditLog, AIConfig, BulkGenerateOptions } from '../types';
+import { getAppDomain } from '../utils/domain';
 
 const STORAGE_KEYS = {
   BUSINESSES: 'tapreview_businesses_prod',
@@ -18,7 +19,7 @@ export const DEFAULT_SETTINGS: AIConfig = {
   defaultTone: 'warm',
   maxDrafts: 3,
   enableNoKeyFallback: true,
-  customDomain: 'tapreview.in',
+  customDomain: getAppDomain(),
 };
 
 // Database Layer Class (No hardcoded mock records; clean production persistence)
@@ -313,7 +314,11 @@ class LocalDatabase {
 
   // --- Settings ---
   public getSettings(): AIConfig {
-    return this.get<AIConfig>(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+    const s = this.get<AIConfig>(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
+    return {
+      ...s,
+      customDomain: getAppDomain(s.customDomain),
+    };
   }
 
   public saveSettings(settings: AIConfig): void {

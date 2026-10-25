@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import type { AIConfig } from '../types';
 import { api } from '../services/api';
-import { Settings, Sparkles, Key, Globe, RefreshCcw, X, Check } from 'lucide-react';
+import { Settings, Sparkles, Key, Globe, RefreshCcw, X, Check, ShieldCheck, Lock, Eye, EyeOff } from 'lucide-react';
 import { sounds } from '../utils/audio';
+import { getAppDomain } from '../utils/domain';
+import { authService } from '../services/auth';
 
 interface SettingsModalProps {
   config: AIConfig;
@@ -23,12 +25,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [defaultTone, setDefaultTone] = useState<'warm' | 'enthusiastic' | 'professional' | 'brief'>(config.defaultTone);
   const [maxDrafts, setMaxDrafts] = useState<number>(config.maxDrafts || 3);
   const [enableNoKeyFallback, setEnableNoKeyFallback] = useState<boolean>(config.enableNoKeyFallback ?? true);
-  const [customDomain, setCustomDomain] = useState<string>(config.customDomain || 'tapreview.in');
+  const [customDomain, setCustomDomain] = useState<string>(config.customDomain || getAppDomain());
+  const [newAdminPassword, setNewAdminPassword] = useState<string>('');
+  const [showAdminPassword, setShowAdminPassword] = useState<boolean>(false);
+  const [passwordUpdatedMsg, setPasswordUpdatedMsg] = useState<boolean>(false);
   const [savedFeedback, setSavedFeedback] = useState<boolean>(false);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     sounds.playTap();
+    
+    if (newAdminPassword.trim()) {
+      authService.setCustomPassword(newAdminPassword.trim());
+      setNewAdminPassword('');
+      setPasswordUpdatedMsg(true);
+    }
+
     const newConfig: AIConfig = {
       provider,
       apiKey: apiKey.trim(),
@@ -36,7 +48,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       defaultTone,
       maxDrafts,
       enableNoKeyFallback,
-      customDomain: customDomain.trim() || 'tapreview.in',
+      customDomain: customDomain.trim() || getAppDomain(),
     };
 
     await api.saveSettings(newConfig);
@@ -92,13 +104,58 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 type="text"
                 value={customDomain}
                 onChange={(e) => setCustomDomain(e.target.value)}
-                placeholder="tapreview.in or yourdomain.in"
+                placeholder={getAppDomain() || 'yourdomain.com'}
                 className="w-full bg-transparent text-stone-900 font-mono text-xs focus:outline-none"
               />
             </div>
-            <p className="text-[10px] text-stone-500 mt-1.5">
-              All generated QR codes and NFC chips encode URLs under this domain (e.g. <code>https://{customDomain}/r/01</code>).
+            <p className="text-[10px] text-stone-500 mt-1.5 leading-relaxed">
+              All generated QR codes and NFC chips encode URLs under this domain (e.g. <code>https://{customDomain || getAppDomain()}/r/01</code>).
+              <span className="block mt-0.5 text-stone-400">Can also be configured via <code>VITE_APP_DOMAIN</code> in <code>.env</code>.</span>
             </p>
+          </div>
+
+          {/* Admin Security & Master Key Section */}
+          <div className="p-4 bg-white rounded-2xl border border-[#E8E2D5] shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-stone-900 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Admin Authentication & Permissions</span>
+              </h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
+                {authService.isConfiguredViaEnv() ? '.env Active' : 'Protected'}
+              </span>
+            </div>
+
+            <div>
+              <label className="block text-stone-600 mb-1 font-medium">Update Admin Password</label>
+              <div className="flex items-center gap-1 bg-[#FAF8F5] border border-[#DCD4C5] rounded-xl px-3 py-2">
+                <Lock className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                <input
+                  type={showAdminPassword ? 'text' : 'password'}
+                  value={newAdminPassword}
+                  onChange={(e) => setNewAdminPassword(e.target.value)}
+                  placeholder="Enter new password to update..."
+                  className="w-full bg-transparent text-stone-900 font-mono text-xs focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAdminPassword(!showAdminPassword)}
+                  className="text-stone-400 hover:text-stone-700"
+                >
+                  {showAdminPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+              <p className="text-[10px] text-stone-500 mt-1.5 leading-relaxed">
+                Prevents unauthorized users from accessing the dashboard. Can also be set in <code>.env</code> via <code>VITE_ADMIN_PASSWORD=your_password</code>.
+              </p>
+            </div>
+
+            {passwordUpdatedMsg && (
+              <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-medium flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Admin password updated successfully!</span>
+              </div>
+            )}
           </div>
 
           {/* AI Provider Section */}

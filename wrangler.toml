@@ -14,8 +14,9 @@ not_found_handling = "single-page-application"
 
 # Environment variables
 [vars]
-ENVIRONMENT = "production"
-APP_DOMAIN = "https://tapreview.in"
+# Dynamic App Domain: Leave empty to automatically use the current deployment URL / origin.
+# Or set to your custom domain: APP_DOMAIN = "https://yourdomain.com"
+APP_DOMAIN = ""
 DEFAULT_ROUTE_PREFIX = "/r/"
 AI_PROVIDER = "gemini" # Options: gemini, openai, workers-ai, template
 AI_MODEL = "gemini-1.5-flash"

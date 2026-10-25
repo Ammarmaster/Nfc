@@ -9,7 +9,9 @@ import {
   Settings,
   Sparkles,
   Camera,
-  Star
+  Star,
+  LogOut,
+  ShieldCheck
 } from 'lucide-react';
 import { sounds } from '../utils/audio';
 
@@ -18,6 +20,7 @@ interface HeaderProps {
   setActiveTab: (tab: 'stands' | 'studio' | 'businesses' | 'menus' | 'nfc' | 'analytics') => void;
   onOpenSettings: () => void;
   onOpenScanner: () => void;
+  onLogout?: () => void;
   totalStands: number;
   totalVisits: number;
 }
@@ -27,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   onOpenSettings,
   onOpenScanner,
+  onLogout,
   totalStands,
   totalVisits,
 }) => {
@@ -114,6 +118,20 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Settings className="w-4 h-4" />
             </button>
+
+            {/* Logout / Lock Button */}
+            {onLogout && (
+              <button
+                onClick={() => {
+                  sounds.playTap();
+                  onLogout();
+                }}
+                className="p-2.5 rounded-2xl bg-white hover:bg-rose-50 text-stone-500 hover:text-rose-700 border border-[#E8E2D5] hover:border-rose-300 transition-all shadow-sm"
+                title="Lock Admin Portal & Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 

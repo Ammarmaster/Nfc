@@ -9,7 +9,8 @@ import {
   Radio,
   BarChart3,
   Settings,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import { sounds } from '../utils/audio';
 
@@ -18,6 +19,7 @@ interface MobileBottomNavProps {
   setActiveTab: (tab: 'stands' | 'studio' | 'businesses' | 'menus' | 'nfc' | 'analytics') => void;
   onOpenScanner: () => void;
   onOpenSettings: () => void;
+  onLogout?: () => void;
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
@@ -25,6 +27,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   setActiveTab,
   onOpenScanner,
   onOpenSettings,
+  onLogout,
 }) => {
   const [isMoreMenuOpen, setIsMoreMenuOpen] = React.useState(false);
 
@@ -126,6 +129,25 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   <span className="text-[10px] text-stone-500">Domain & AI Cloud</span>
                 </div>
               </button>
+
+              {onLogout && (
+                <button
+                  onClick={() => {
+                    sounds.playTap();
+                    setIsMoreMenuOpen(false);
+                    onLogout();
+                  }}
+                  className="p-4 rounded-2xl border border-rose-200 bg-rose-50/70 text-left flex items-center gap-3 transition-all text-rose-700 hover:bg-rose-100 col-span-2"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
+                    <LogOut className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <strong className="block text-rose-950 font-bold">Lock Admin Portal</strong>
+                    <span className="text-[10px] text-rose-600">Sign out and protect dashboard</span>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
         </div>

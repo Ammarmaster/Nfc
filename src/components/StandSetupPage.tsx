@@ -12,12 +12,16 @@ import {
   QrCode, 
   Radio, 
   Layers,
-  Info
+  Info,
+  Lock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { InstagramIcon } from './icons';
 import type { Stand, Business, BusinessCategory } from '../types';
 import { api } from '../services/api';
 import { sounds } from '../utils/audio';
+import { authService } from '../services/auth';
 
 interface StandSetupPageProps {
   slug: string;
@@ -48,6 +52,8 @@ export const StandSetupPage: React.FC<StandSetupPageProps> = ({
   const [instagramUrl, setInstagramUrl] = useState(existingBusiness?.instagramUrl || '');
   const [websiteUrl, setWebsiteUrl] = useState(existingBusiness?.websiteUrl || '');
   const [whatsappUrl, setWhatsappUrl] = useState(existingBusiness?.whatsappUrl || '');
+  const [adminPasscode, setAdminPasscode] = useState('');
+  const [showAdminPasscode, setShowAdminPasscode] = useState(false);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -90,6 +96,20 @@ export const StandSetupPage: React.FC<StandSetupPageProps> = ({
     if (!googleReviewUrl.trim() && !digitalMenuUrl.trim() && !instagramUrl.trim()) {
       setErrorMsg('Please provide at least one link (Google Review, Menu, or Instagram).');
       return;
+    }
+
+    // Require admin authentication to claim/assign unassigned stands
+    if (!authService.isAuthenticated()) {
+      if (!adminPasscode.trim()) {
+        setErrorMsg('Please enter your Admin Master Password to authorize configuring this stand.');
+        return;
+      }
+      if (!authService.verifyPassword(adminPasscode)) {
+        setErrorMsg('Invalid Admin Password. Only authorized owners or staff can configure stands.');
+        return;
+      }
+      // Log session in so subsequent actions don't prompt again
+      authService.login(adminPasscode, true);
     }
 
     setIsSubmitting(true);
@@ -370,8 +390,45 @@ export const StandSetupPage: React.FC<StandSetupPageProps> = ({
             </div>
           </div>
 
+          {/* Admin Authorization Key Input (if not already logged in) */}
+          {!authService.isAuthenticated() && (
+            <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-300 shadow-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-stone-900">
+                  <ShieldCheck className="w-4 h-4 text-[#B3801A]" />
+                  <span>Admin Authorization Key</span>
+                </label>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200/80 text-[#855B09] font-extrabold uppercase tracking-wider">
+                  Permission Required
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-600 leading-relaxed">
+                To prevent customers from altering this stand, enter your admin master key (default: <code>admin123</code> or configured via <code>VITE_ADMIN_PASSWORD</code>).
+              </p>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400">
+                  <Lock className="w-3.5 h-3.5" />
+                </div>
+                <input
+                  type={showAdminPasscode ? 'text' : 'password'}
+                  value={adminPasscode}
+                  onChange={(e) => setAdminPasscode(e.target.value)}
+                  placeholder="Enter admin master password..."
+                  className="w-full pl-9 pr-10 py-2.5 bg-white border border-amber-300 rounded-xl text-xs text-stone-900 font-mono placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAdminPasscode(!showAdminPasscode)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-700"
+                >
+                  {showAdminPasscode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Permanent URL Guarantee Notice */}
-          <div className="p-3.5 rounded-2xl bg-amber-50/60 border border-amber-200 text-stone-600 text-xs">
+          <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#E8E2D5] text-stone-600 text-xs">
             <span className="font-bold text-stone-900 block mb-0.5">Permanent URL Guarantee</span>
             Physical QR Code URL <code className="bg-white px-1.5 py-0.5 rounded border border-amber-200 font-bold text-stone-800">/r/{slug}</code> remains permanent. You can modify these destination links anytime without reprinting!
           </div>

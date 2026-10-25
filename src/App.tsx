@@ -19,10 +19,14 @@ import { QRScannerModal } from './components/QRScannerModal';
 import { StandSetupPage } from './components/StandSetupPage';
 import { CustomerHubPage } from './components/CustomerHubPage';
 import { ReviewSliderPage } from './components/ReviewSliderPage';
+import { AdminAuthScreen } from './components/AdminAuthScreen';
+import { getAppDomain } from './utils/domain';
+import { authService } from './services/auth';
 
 export function App() {
   // Navigation & View State
   const [activeTab, setActiveTab] = useState<'stands' | 'studio' | 'businesses' | 'menus' | 'nfc' | 'analytics'>('stands');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => authService.isAuthenticated());
   
   // Data State
   const [stands, setStands] = useState<Stand[]>([]);
@@ -34,7 +38,7 @@ export function App() {
     defaultTone: 'warm',
     maxDrafts: 3,
     enableNoKeyFallback: true,
-    customDomain: 'tapreview.in',
+    customDomain: getAppDomain(),
   });
   const [analyticsEvents, setAnalyticsEvents] = useState<any[]>([]);
 
@@ -309,8 +313,21 @@ export function App() {
     }
   }
 
+  // Require admin authentication to view management dashboard
+  if (!isAuthenticated) {
+    return <AdminAuthScreen onSuccess={() => setIsAuthenticated(true)} />;
+  }
+
   // Calculate total metrics for Header
   const totalVisits = stands.reduce((sum, s) => sum + (s.visitCount || 0), 0);
+
+  // Calculate active domain dynamically from .env, settings, or window.location.host
+  const activeDomain = getAppDomain(settings.customDomain);
+
+  const handleLogout = () => {
+    authService.logout();
+    setIsAuthenticated(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-stone-900 flex flex-col font-sans selection:bg-[#E8C872] selection:text-stone-950">
@@ -320,6 +337,7 @@ export function App() {
         setActiveTab={setActiveTab}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenScanner={() => setIsScannerOpen(true)}
+        onLogout={handleLogout}
         totalStands={stands.length}
         totalVisits={totalVisits}
       />
@@ -334,7 +352,7 @@ export function App() {
             onEditStand={(stand) => setEditingStand(stand)}
             onOpenPrintModal={(stands) => setStandsToPrint(stands)}
             onOpenCustomerView={openCustomerView}
-            domain={settings.customDomain}
+            domain={activeDomain}
             onOpenScanner={() => setIsScannerOpen(true)}
           />
         )}
@@ -346,7 +364,7 @@ export function App() {
             onRefreshStands={reloadData}
             onEditStand={(stand) => setEditingStand(stand)}
             onOpenPrintModal={(stands) => setStandsToPrint(stands)}
-            domain={settings.customDomain}
+            domain={activeDomain}
           />
         )}
 
@@ -375,7 +393,7 @@ export function App() {
           <NFCManager
             stands={stands}
             onRefreshStands={reloadData}
-            domain={settings.customDomain}
+            domain={activeDomain}
           />
         )}
 
@@ -395,7 +413,7 @@ export function App() {
           businesses={businesses}
           onClose={() => setEditingStand(null)}
           onSaved={reloadData}
-          domain={settings.customDomain}
+          domain={activeDomain}
         />
       )}
 
@@ -406,7 +424,7 @@ export function App() {
         stands={stands}
         businesses={businesses}
         onRefreshStands={reloadData}
-        domain={settings.customDomain}
+        domain={activeDomain}
         onOpenCustomerView={openCustomerView}
         onEditStand={(stand) => setEditingStand(stand)}
       />
@@ -416,7 +434,7 @@ export function App() {
         <PrintSheetModal
           stands={standsToPrint}
           onClose={() => setStandsToPrint(null)}
-          domain={settings.customDomain}
+          domain={activeDomain}
         />
       )}
 
@@ -436,6 +454,7 @@ export function App() {
         setActiveTab={setActiveTab}
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Production SaaS Footer */}
