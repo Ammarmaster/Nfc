@@ -16,6 +16,9 @@ import { StandModal } from './components/StandModal';
 import { PrintSheetModal } from './components/PrintSheetModal';
 import { SettingsModal } from './components/SettingsModal';
 import { QRScannerModal } from './components/QRScannerModal';
+import { StandSetupPage } from './components/StandSetupPage';
+import { CustomerHubPage } from './components/CustomerHubPage';
+import { ReviewSliderPage } from './components/ReviewSliderPage';
 
 export function App() {
   // Navigation & View State
@@ -48,6 +51,8 @@ export function App() {
     stand?: Stand;
     business?: Business;
     statusCode?: 'inactive' | 'unassigned' | 'not_found';
+    isSetup?: boolean;
+    view?: 'hub' | 'review_slider' | 'menu';
   } | null>(null);
 
   // Load Initial Data
@@ -68,11 +73,29 @@ export function App() {
     reloadData();
   }, []);
 
-  // Listen to Hash changes or check URL for direct public routes e.g. /r/:slug
+  // Listen to Hash changes or check URL for direct public routes e.g. /r/:slug or /#/setup
   useEffect(() => {
     const handleHash = async () => {
       const hash = window.location.hash;
       const pathname = window.location.pathname;
+
+      // Handle Quick Setup route /#/setup?slug=...
+      if (hash.startsWith('#/setup')) {
+        const urlParams = new URLSearchParams(hash.split('?')[1] || '');
+        const slug = urlParams.get('slug') || '01';
+        const stand = await api.getStandBySlug(slug);
+        let biz: Business | undefined;
+        if (stand?.businessId) {
+          biz = await api.getBusinessById(stand.businessId);
+        }
+        setCustomerRoute({
+          slug,
+          stand,
+          business: biz,
+          isSetup: true,
+        });
+        return;
+      }
 
       let targetSlug: string | null = null;
       let isNfc = false;
@@ -89,11 +112,18 @@ export function App() {
 
       if (targetSlug) {
         const stand = await api.getStandBySlug(targetSlug);
+        
+        // 1. If stand does not exist yet, allow on-site activation immediately!
         if (!stand) {
-          setCustomerRoute({ slug: targetSlug, statusCode: 'not_found' });
+          setCustomerRoute({
+            slug: targetSlug,
+            isNfc,
+            isSetup: true,
+          });
           return;
         }
 
+        // 2. If stand is deactivated
         if (!stand.isActive) {
           setCustomerRoute({ slug: targetSlug, statusCode: 'inactive', stand });
           return;
@@ -104,29 +134,73 @@ export function App() {
           biz = await api.getBusinessById(stand.businessId);
         }
 
-        // Record analytics
+        // 3. Check if this stand has any destination links configured
+        const hasLinks = Boolean(
+          stand.destinationUrlOverride ||
+          biz?.googleReviewUrl ||
+          biz?.digitalMenuUrl ||
+          biz?.instagramUrl ||
+          biz?.whatsappUrl ||
+          stand.destinationType === 'MENU_HOSTED'
+        );
+
+        // If not assigned any links, open setup page!
+        if (!stand.businessId || !hasLinks) {
+          setCustomerRoute({
+            slug: targetSlug,
+            isNfc,
+            stand,
+            business: biz,
+            isSetup: true,
+          });
+          return;
+        }
+
+        // Record privacy-conscious scan analytics
         await api.logScanEvent({
           standId: stand.id,
           slug: stand.slug,
           businessId: stand.businessId,
           businessName: biz?.name,
           destinationType: stand.destinationType,
-          destinationUrl: stand.destinationUrlOverride || biz?.googleReviewUrl || 'LANDING_PAGE',
+          destinationUrl: stand.destinationUrlOverride || biz?.googleReviewUrl || biz?.digitalMenuUrl || 'LANDING_PAGE',
           source: isNfc ? 'NFC' : 'QR',
           deviceCategory: 'DESKTOP',
         });
+
+        // Determine view:
+        let view: 'hub' | 'review_slider' | 'menu' = 'hub';
+        if (stand.destinationType === 'MENU_HOSTED') {
+          view = 'menu';
+        }
 
         setCustomerRoute({
           slug: targetSlug,
           isNfc,
           stand,
           business: biz,
+          view,
         });
       } else if (hash.startsWith('#/status')) {
         const urlParams = new URLSearchParams(hash.split('?')[1] || '');
         const code = (urlParams.get('code') || 'unassigned') as any;
         const slug = urlParams.get('slug') || '';
-        setCustomerRoute({ slug, statusCode: code });
+        
+        if (code === 'unassigned') {
+          const stand = await api.getStandBySlug(slug);
+          let biz: Business | undefined;
+          if (stand?.businessId) {
+            biz = await api.getBusinessById(stand.businessId);
+          }
+          setCustomerRoute({
+            slug,
+            stand,
+            business: biz,
+            isSetup: true,
+          });
+        } else {
+          setCustomerRoute({ slug, statusCode: code });
+        }
       } else {
         setCustomerRoute(null);
       }
@@ -157,6 +231,22 @@ export function App() {
 
   // If customer route is active, render customer experience
   if (customerRoute) {
+    if (customerRoute.isSetup) {
+      return (
+        <StandSetupPage
+          slug={customerRoute.slug}
+          stand={customerRoute.stand}
+          existingBusiness={customerRoute.business}
+          businesses={businesses}
+          onSaved={async (savedStand) => {
+            await reloadData();
+            window.location.hash = `#/r/${encodeURIComponent(savedStand.slug)}`;
+          }}
+          onCancel={handleReturnHome}
+        />
+      );
+    }
+
     if (customerRoute.statusCode) {
       return (
         <StatusPage
@@ -168,7 +258,7 @@ export function App() {
     }
 
     if (customerRoute.stand) {
-      if (customerRoute.stand.destinationType === 'MENU_HOSTED') {
+      if (customerRoute.view === 'menu' || customerRoute.stand.destinationType === 'MENU_HOSTED') {
         return (
           <PublicMenuPage
             stand={customerRoute.stand}
@@ -179,7 +269,6 @@ export function App() {
         );
       }
 
-      // Default review landing in milky porcelain theme
       return (
         <div className="min-h-screen bg-[#FAF8F5] text-stone-900 flex flex-col font-sans">
           {/* Subtle top back bar for preview testing */}
@@ -197,11 +286,24 @@ export function App() {
               Exit Preview & Return to Dashboard
             </button>
           </div>
-          <ReviewLandingPage
-            stand={customerRoute.stand}
-            business={customerRoute.business}
-            isNfc={customerRoute.isNfc}
-          />
+
+          {customerRoute.view === 'review_slider' ? (
+            <ReviewSliderPage
+              stand={customerRoute.stand}
+              business={customerRoute.business}
+              isNfc={customerRoute.isNfc}
+              onBack={() => setCustomerRoute(prev => prev ? { ...prev, view: 'hub' } : null)}
+            />
+          ) : (
+            <CustomerHubPage
+              stand={customerRoute.stand}
+              business={customerRoute.business}
+              isNfc={customerRoute.isNfc}
+              onSelectGoogleReview={() => setCustomerRoute(prev => prev ? { ...prev, view: 'review_slider' } : null)}
+              onEditLinks={() => setCustomerRoute(prev => prev ? { ...prev, isSetup: true } : null)}
+              onNavigateHome={handleReturnHome}
+            />
+          )}
         </div>
       );
     }

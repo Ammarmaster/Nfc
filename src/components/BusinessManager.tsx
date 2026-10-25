@@ -65,6 +65,8 @@ export const BusinessManager: React.FC<BusinessManagerProps> = ({
   const [googleReviewUrl, setGoogleReviewUrl] = useState('');
   const [digitalMenuUrl, setDigitalMenuUrl] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
+  const [whatsappUrl, setWhatsappUrl] = useState('');
   const [isActive, setIsActive] = useState(true);
 
   const openAddModal = () => {
@@ -81,6 +83,8 @@ export const BusinessManager: React.FC<BusinessManagerProps> = ({
     setGoogleReviewUrl('');
     setDigitalMenuUrl('');
     setWebsiteUrl('');
+    setInstagramUrl('');
+    setWhatsappUrl('');
     setIsActive(true);
     setIsModalOpen(true);
   };
@@ -99,6 +103,8 @@ export const BusinessManager: React.FC<BusinessManagerProps> = ({
     setGoogleReviewUrl(b.googleReviewUrl || '');
     setDigitalMenuUrl(b.digitalMenuUrl || '');
     setWebsiteUrl(b.websiteUrl || '');
+    setInstagramUrl(b.instagramUrl || '');
+    setWhatsappUrl(b.whatsappUrl || '');
     setIsActive(b.isActive);
     setIsModalOpen(true);
   };
@@ -121,6 +127,8 @@ export const BusinessManager: React.FC<BusinessManagerProps> = ({
       googleReviewUrl: googleReviewUrl.trim() || undefined,
       digitalMenuUrl: digitalMenuUrl.trim() || undefined,
       websiteUrl: websiteUrl.trim() || undefined,
+      instagramUrl: instagramUrl.trim() || undefined,
+      whatsappUrl: whatsappUrl.trim() || undefined,
       isActive,
       createdAt: editingBusiness ? editingBusiness.createdAt : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -454,6 +462,29 @@ export const BusinessManager: React.FC<BusinessManagerProps> = ({
                     placeholder="https://restaurant.com/menu or PDF link"
                     className="w-full px-3 py-2 bg-white border border-[#DCD4C5] rounded-xl text-stone-900 font-mono text-[11px] focus:outline-none focus:border-[#C59B27]"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-stone-700 font-bold mb-1">Instagram Link or @Handle</label>
+                    <input
+                      type="text"
+                      value={instagramUrl}
+                      onChange={(e) => setInstagramUrl(e.target.value)}
+                      placeholder="https://instagram.com/... or @handle"
+                      className="w-full px-3 py-2 bg-white border border-[#DCD4C5] rounded-xl text-stone-900 font-mono text-[11px] focus:outline-none focus:border-[#C59B27]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-stone-700 font-bold mb-1">WhatsApp Contact (Optional)</label>
+                    <input
+                      type="text"
+                      value={whatsappUrl}
+                      onChange={(e) => setWhatsappUrl(e.target.value)}
+                      placeholder="+91 98201 12345 or https://wa.me/..."
+                      className="w-full px-3 py-2 bg-white border border-[#DCD4C5] rounded-xl text-stone-900 font-mono text-[11px] focus:outline-none focus:border-[#C59B27]"
+                    />
+                  </div>
                 </div>
               </div>
 

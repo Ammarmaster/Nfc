@@ -139,6 +139,7 @@ export const StandModal: React.FC<StandModalProps> = ({
             </label>
             <div className="grid grid-cols-2 gap-2">
               {[
+                { id: 'MULTI_LINK', label: 'Multi-Link Hub (Review + Menu + IG)' },
                 { id: 'REVIEW', label: 'Google Review Safe Page' },
                 { id: 'MENU_HOSTED', label: 'Hosted Digital Menu' },
                 { id: 'MENU_EXTERNAL', label: 'External Menu URL' },

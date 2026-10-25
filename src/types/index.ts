@@ -21,12 +21,14 @@ export interface Business {
   googleReviewUrl?: string; // e.g. https://search.google.com/local/writereview?placeid=ChIJ...
   digitalMenuUrl?: string;
   websiteUrl?: string;
+  instagramUrl?: string;
+  whatsappUrl?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export type DestinationType = 'REVIEW' | 'MENU_HOSTED' | 'MENU_EXTERNAL' | 'CUSTOM_URL';
+export type DestinationType = 'REVIEW' | 'MENU_HOSTED' | 'MENU_EXTERNAL' | 'CUSTOM_URL' | 'MULTI_LINK';
 
 export type NFCStatus = 'PENDING' | 'PROGRAMMED' | 'VERIFIED' | 'FAILED';
 

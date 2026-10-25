@@ -45,18 +45,32 @@ export const StatusPage: React.FC<StatusPageProps> = ({ code, slug, onNavigateHo
           This physical stand URL will remain identical once re-activated or assigned. The printed QR code and programmed NFC tag never need replacement.
         </div>
 
-        {onNavigateHome && (
-          <button
-            onClick={() => {
-              sounds.playTap();
-              onNavigateHome();
-            }}
-            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#C59B27] text-stone-950 text-sm font-extrabold shadow-md hover:brightness-105 active:scale-95 transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Return to Dashboard</span>
-          </button>
-        )}
+        <div className="space-y-2.5">
+          {(code === 'unassigned' || code === 'not_found') && slug && (
+            <button
+              onClick={() => {
+                sounds.playTap();
+                window.location.hash = `#/setup?slug=${encodeURIComponent(slug)}`;
+              }}
+              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-[#D4AF37] via-[#E8C872] to-[#C59B27] text-stone-950 text-sm font-black shadow-md hover:brightness-105 active:scale-95 transition-all"
+            >
+              <span>Configure & Activate Stand #{slug}</span>
+            </button>
+          )}
+
+          {onNavigateHome && (
+            <button
+              onClick={() => {
+                sounds.playTap();
+                onNavigateHome();
+              }}
+              className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-[#FAF8F5] border border-[#DCD4C5] text-stone-700 hover:text-stone-900 text-xs font-bold hover:bg-stone-100 transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Return to Dashboard</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

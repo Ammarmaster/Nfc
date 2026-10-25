@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS businesses (
     google_review_url TEXT,
     digital_menu_url TEXT,
     website_url TEXT,
+    instagram_url TEXT,
+    whatsapp_url TEXT,
     is_active INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))

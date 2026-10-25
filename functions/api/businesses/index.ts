@@ -24,6 +24,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         google_review_url AS googleReviewUrl,
         digital_menu_url AS digitalMenuUrl,
         website_url AS websiteUrl,
+        instagram_url AS instagramUrl,
+        whatsapp_url AS whatsappUrl,
         is_active AS isActive,
         created_at AS createdAt,
         updated_at AS updatedAt
@@ -61,8 +63,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       INSERT INTO businesses (
         id, name, category, owner_name, contact_phone, contact_email,
         logo_url, brand_color, address, google_place_id, google_review_url,
-        digital_menu_url, website_url, is_active, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        digital_menu_url, website_url, instagram_url, whatsapp_url, is_active, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         category = excluded.category,
@@ -76,6 +78,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         google_review_url = excluded.google_review_url,
         digital_menu_url = excluded.digital_menu_url,
         website_url = excluded.website_url,
+        instagram_url = excluded.instagram_url,
+        whatsapp_url = excluded.whatsapp_url,
         is_active = excluded.is_active,
         updated_at = excluded.updated_at
     `).bind(
@@ -92,6 +96,8 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       b.googleReviewUrl || null,
       b.digitalMenuUrl || null,
       b.websiteUrl || null,
+      b.instagramUrl || null,
+      b.whatsappUrl || null,
       b.isActive !== false ? 1 : 0,
       now,
       now

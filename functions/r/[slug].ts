@@ -23,6 +23,11 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     deviceCategory = 'OTHER';
   }
 
+  // Graceful fallback if Cloudflare D1 is not bound (enables instant 100% free hosting without database setup)
+  if (!env?.DB) {
+    return Response.redirect(`${url.origin}/#/r/${encodeURIComponent(slug)}${isNfc ? '?nfc=1' : ''}`, 302);
+  }
+
   try {
     // 1. Query stand and assigned business
     const query = `
@@ -39,7 +44,9 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
         b.name AS business_name,
         b.is_active AS business_active,
         b.google_review_url,
-        b.digital_menu_url
+        b.digital_menu_url,
+        b.instagram_url,
+        b.whatsapp_url
       FROM stands s
       LEFT JOIN businesses b ON s.business_id = b.id
       WHERE s.slug = ?
@@ -48,14 +55,27 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
 
     const stand = await env.DB.prepare(query).bind(slug).first<any>();
 
-    // If stand doesn't exist or is archived
+    // If stand doesn't exist or is archived, redirect to Quick Setup to allow claiming/activating
     if (!stand || stand.is_archived) {
-      return Response.redirect(`${url.origin}/#/status?code=not_found&slug=${encodeURIComponent(slug)}`, 302);
+      return Response.redirect(`${url.origin}/#/setup?slug=${encodeURIComponent(slug)}`, 302);
     }
 
     // Check if disabled/inactive
     if (!stand.stand_active || (stand.business_id && !stand.business_active)) {
       return Response.redirect(`${url.origin}/#/status?code=inactive&slug=${encodeURIComponent(slug)}`, 302);
+    }
+
+    // Check if stand is unassigned or lacks links
+    const hasAnyLink = Boolean(
+      stand.destination_url_override ||
+      stand.google_review_url ||
+      stand.digital_menu_url ||
+      stand.instagram_url ||
+      stand.whatsapp_url
+    );
+
+    if (!stand.business_id || !hasAnyLink) {
+      return Response.redirect(`${url.origin}/#/setup?slug=${encodeURIComponent(slug)}`, 302);
     }
 
     // Determine final destination
@@ -91,8 +111,8 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     ]);
 
     // Handle destination modes:
-    // If destination is REVIEW or MENU_HOSTED, route to client landing application for rich experience
-    if (stand.destination_type === 'REVIEW' || stand.destination_type === 'MENU_HOSTED') {
+    // If destination is MULTI_LINK, REVIEW, or MENU_HOSTED, route to client landing application for rich experience
+    if (stand.destination_type === 'MULTI_LINK' || stand.destination_type === 'REVIEW' || stand.destination_type === 'MENU_HOSTED') {
       const targetPath = `/#/r/${encodeURIComponent(slug)}${isNfc ? '?nfc=1' : ''}`;
       return Response.redirect(`${url.origin}${targetPath}`, 302);
     }
@@ -103,7 +123,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
     }
 
     // If unassigned or missing destination
-    return Response.redirect(`${url.origin}/#/status?code=unassigned&slug=${encodeURIComponent(slug)}`, 302);
+    return Response.redirect(`${url.origin}/#/setup?slug=${encodeURIComponent(slug)}`, 302);
 
   } catch (error) {
     console.error('Redirect handler error:', error);
